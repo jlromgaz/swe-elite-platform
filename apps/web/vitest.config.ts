@@ -12,5 +12,11 @@ export default defineConfig({
     env: {
       DATABASE_URL: 'file:./test.db',
     },
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
   },
 });
