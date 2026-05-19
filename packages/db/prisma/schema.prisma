@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  targetMonths Int           @default(6)
+  locale       String        @default("en")
+  createdAt    DateTime      @default(now())
+  profile      UserProfile?
+  progress     NodeProgress[]
+  pillReviews  PillReview[]
+  validations  Validation[]
+}
+
+model UserProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  currentRole    String
+  yearsExp       Int
+  targetRole     String
+  weakAreas      String
+  goalDeadline   DateTime
+  onboardingDone Boolean  @default(false)
+}
+
+model Topic {
+  id             String        @id
+  slug           String        @unique
+  title          String
+  category       String
+  estimatedHours Float
+  dependsOn      String
+  isRequired     Boolean       @default(true)
+  resources      Resource[]
+  pills          Pill[]
+  progress       NodeProgress[]
+  validations    Validation[]
+}
+
+model NodeProgress {
+  id         String    @id @default(uuid())
+  userId     String
+  topicId    String
+  user       User      @relation(fields: [userId], references: [id])
+  topic      Topic     @relation(fields: [topicId], references: [id])
+  state      String    @default("locked")
+  startedAt  DateTime?
+  masteredAt DateTime?
+
+  @@unique([userId, topicId])
+}
+
+model Resource {
+  id          String  @id @default(uuid())
+  topicId     String
+  topic       Topic   @relation(fields: [topicId], references: [id])
+  type        String
+  title       String
+  url         String
+  locale      String  @default("en")
+  durationMin Int?
+  quality     Int     @default(5)
+}
+
+model Pill {
+  id      String       @id @default(uuid())
+  topicId String
+  topic   Topic        @relation(fields: [topicId], references: [id])
+  content String
+  locale  String       @default("en")
+  reviews PillReview[]
+}
+
+model PillReview {
+  id          String   @id @default(uuid())
+  userId      String
+  pillId      String
+  user        User     @relation(fields: [userId], references: [id])
+  pill        Pill     @relation(fields: [pillId], references: [id])
+  reviewCount Int      @default(0)
+  nextReview  DateTime
+  lastScore   Int?
+
+  @@unique([userId, pillId])
+}
+
+model Validation {
+  id          String   @id @default(uuid())
+  userId      String
+  topicId     String
+  user        User     @relation(fields: [userId], references: [id])
+  topic       Topic    @relation(fields: [topicId], references: [id])
+  type        String
+  question    String
+  answer      String?
+  score       Int?
+  passed      Boolean  @default(false)
+  attemptedAt DateTime @default(now())
+}
