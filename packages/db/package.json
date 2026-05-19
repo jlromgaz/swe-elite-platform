@@ -1,0 +1,19 @@
+{
+  "name": "@elite/db",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "db:push": "DATABASE_URL='file:./dev.db' prisma db push",
+    "db:generate": "DATABASE_URL='file:./dev.db' prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}
