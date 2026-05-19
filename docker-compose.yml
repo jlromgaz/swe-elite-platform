@@ -1,0 +1,16 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - db-data:/data
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/data/prod.db
+    restart: unless-stopped
+
+volumes:
+  db-data:

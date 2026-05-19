@@ -5,7 +5,11 @@
   "scripts": {
     "test": "vitest run",
     "db:push": "DATABASE_URL='file:./dev.db' prisma db push",
-    "db:generate": "DATABASE_URL='file:./dev.db' prisma generate"
+    "db:generate": "DATABASE_URL='file:./dev.db' prisma generate",
+    "db:seed": "DATABASE_URL='file:./dev.db' ts-node prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "DATABASE_URL='file:./dev.db' ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0"
