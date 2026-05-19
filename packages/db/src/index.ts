@@ -11,3 +11,4 @@ export const prisma =
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 prisma.$executeRawUnsafe('PRAGMA journal_mode=WAL').catch(() => {});
+prisma.$executeRawUnsafe('PRAGMA synchronous=NORMAL').catch(() => {});
