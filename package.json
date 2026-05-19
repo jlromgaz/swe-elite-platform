@@ -1,0 +1,12 @@
+{
+  "name": "top-1-percent-swe",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "test": "npm run test --workspaces --if-present"
+  }
+}
