@@ -56,6 +56,7 @@ model NodeProgress {
   masteredAt DateTime?
 
   @@unique([userId, topicId])
+  @@index([userId, state])
 }
 
 model Resource {
