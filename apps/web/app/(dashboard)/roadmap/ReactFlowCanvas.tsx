@@ -16,6 +16,7 @@ import {
 import dagre from '@dagrejs/dagre';
 import { useRouter } from 'next/navigation';
 import { TopicNode } from '@elite/ui';
+import QuizModal from './QuizModal';
 
 const NODE_WIDTH = 172;
 const NODE_HEIGHT = 80;
@@ -61,6 +62,7 @@ export default function ReactFlowCanvas({
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, , onEdgesChange] = useEdgesState(initialEdges);
   const [ready, setReady] = useState(false);
+  const [quizTopicId, setQuizTopicId] = useState<string | null>(null);
 
   useLayoutEffect(() => {
     if (initialNodes.length === 0) {
@@ -87,8 +89,7 @@ export default function ReactFlowCanvas({
         await fetch(`/api/roadmap/${topicId}/start`, { method: 'POST' });
         router.refresh();
       } else if (state === 'in_progress') {
-        await fetch(`/api/roadmap/${topicId}/complete`, { method: 'POST' });
-        router.refresh();
+        setQuizTopicId(topicId);
       }
     },
     [router],
@@ -115,6 +116,9 @@ export default function ReactFlowCanvas({
         <Background />
         <Controls />
       </ReactFlow>
+      {quizTopicId && (
+        <QuizModal topicId={quizTopicId} onClose={() => setQuizTopicId(null)} />
+      )}
     </div>
   );
 }
