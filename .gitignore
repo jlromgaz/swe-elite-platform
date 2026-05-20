@@ -16,8 +16,9 @@ dist/
 .env.local
 .env*.local
 
-# SDD tooling
+# SDD tooling & artifacts
 .atl/
+documentation/sdd/
 
 # OS
 .DS_Store

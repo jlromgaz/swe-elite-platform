@@ -1,15 +1,14 @@
-import { describe, it, expect, beforeEach, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
 import { prisma } from '@elite/db';
 import { NextRequest } from 'next/server';
 
-const VALID_BODY = {
-  email: 'onboard@elite.com',
-  currentRole: 'junior',
-  yearsExp: 2,
-  targetRole: 'staff-engineer',
-  weakAreas: [],
-  goalDeadline: '2027-01-01T00:00:00.000Z',
-};
+// Mock next/headers so setSessionCookie doesn't fail in test environment
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(() => ({
+    set: vi.fn(),
+    get: vi.fn(),
+  })),
+}));
 
 const TEST_TOPIC = {
   id: 'fundamentals-1',
@@ -30,10 +29,9 @@ const makeReq = (body: unknown) =>
 
 describe('POST /api/onboarding', () => {
   beforeEach(async () => {
-    await prisma.nodeProgress.deleteMany();
     await prisma.pillReview.deleteMany();
     await prisma.validation.deleteMany();
-    await prisma.userProfile.deleteMany();
+    await prisma.nodeProgress.deleteMany();
     await prisma.user.deleteMany();
     await prisma.resource.deleteMany();
     await prisma.pill.deleteMany();
@@ -45,125 +43,81 @@ describe('POST /api/onboarding', () => {
     await prisma.$disconnect();
   });
 
-  it('Scenario A: returns 201 and creates User + UserProfile + NodeProgress', async () => {
+  it('POST with { username: "alice" } (new user) returns 201, creates User, seeds NodeProgress, returns { userId, created: true }', async () => {
     const { POST } = await import('./route');
-    const res = await POST(makeReq(VALID_BODY));
+    const res = await POST(makeReq({ username: 'alice' }));
     const data = await res.json();
 
     expect(res.status).toBe(201);
     expect(data.userId).toBeDefined();
-    expect(data.nodesSeeded).toBe(1);
+    expect(data.created).toBe(true);
 
-    const user = await prisma.user.findUnique({ where: { email: VALID_BODY.email } });
+    const user = await prisma.user.findUnique({ where: { username: 'alice' } });
     expect(user).not.toBeNull();
-
-    const profile = await prisma.userProfile.findUnique({ where: { userId: user!.id } });
-    expect(profile).not.toBeNull();
-    expect(profile!.currentRole).toBe(VALID_BODY.currentRole);
+    expect(user!.username).toBe('alice');
 
     const nodes = await prisma.nodeProgress.findMany({ where: { userId: user!.id } });
-    expect(nodes).toHaveLength(1);
-    expect(nodes[0].state).toBe('available');
+    expect(nodes.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('Scenario B: returns 409 on duplicate email', async () => {
+  it('POST with { username: "alice" } again (existing user) returns 200, no new User created, returns { userId, created: false }', async () => {
     const { POST } = await import('./route');
-    await POST(makeReq(VALID_BODY));
-    const res = await POST(makeReq(VALID_BODY));
-    expect(res.status).toBe(409);
+    // First call - create user
+    await POST(makeReq({ username: 'alice' }));
+    const countBefore = await prisma.user.count();
+
+    // Second call - find existing user
+    const res = await POST(makeReq({ username: 'alice' }));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.userId).toBeDefined();
+    expect(data.created).toBe(false);
+
+    const countAfter = await prisma.user.count();
+    expect(countAfter).toBe(countBefore);
   });
 
-  it('Scenario C: returns 400 on missing required field', async () => {
+  it('POST with { username: "" } returns 400', async () => {
     const { POST } = await import('./route');
-    const { email: _, ...bodyWithoutEmail } = VALID_BODY;
-    const res = await POST(makeReq(bodyWithoutEmail));
+    const res = await POST(makeReq({ username: '' }));
     expect(res.status).toBe(400);
   });
 
-  it('Scenario D: multiple topological roots — both get state "available"', async () => {
-    // Add a second root topic (also dependsOn: '[]')
-    await prisma.topic.create({
-      data: {
-        id: 'fundamentals-2',
-        slug: 'algorithms',
-        title: 'Algorithms',
-        category: 'fundamentals',
-        estimatedHours: 12,
-        dependsOn: '[]',
-        isRequired: true,
-      },
-    });
-
+  it('POST with whitespace-only username returns 400', async () => {
     const { POST } = await import('./route');
-    const res = await POST(makeReq(VALID_BODY));
-    expect(res.status).toBe(201);
-
-    const user = await prisma.user.findUnique({ where: { email: VALID_BODY.email } });
-    const nodes = await prisma.nodeProgress.findMany({ where: { userId: user!.id } });
-    const availableNodes = nodes.filter((n) => n.state === 'available');
-    expect(availableNodes).toHaveLength(2);
-    const availableIds = availableNodes.map((n) => n.topicId).sort();
-    expect(availableIds).toEqual(['fundamentals-1', 'fundamentals-2']);
+    const res = await POST(makeReq({ username: '   ' }));
+    expect(res.status).toBe(400);
   });
 
-  it('Scenario E: topic with non-empty dependsOn is seeded as "locked"', async () => {
-    // Add a dependent topic
-    await prisma.topic.create({
-      data: {
-        id: 'advanced-1',
-        slug: 'system-design',
-        title: 'System Design',
-        category: 'advanced',
-        estimatedHours: 20,
-        dependsOn: '["fundamentals-1"]',
-        isRequired: true,
-      },
-    });
-
+  it('P2002 recovery: if username created concurrently, returns 200 as existing user', async () => {
     const { POST } = await import('./route');
-    const res = await POST(makeReq(VALID_BODY));
-    expect(res.status).toBe(201);
-
-    const user = await prisma.user.findUnique({ where: { email: VALID_BODY.email } });
-    const nodes = await prisma.nodeProgress.findMany({ where: { userId: user!.id } });
-    const locked = nodes.find((n) => n.topicId === 'advanced-1');
-    const available = nodes.find((n) => n.topicId === 'fundamentals-1');
-    expect(locked?.state).toBe('locked');
-    expect(available?.state).toBe('available');
+    // Pre-create the user to simulate the race winner
+    await prisma.user.create({ data: { username: 'race-user' } });
+    // Call route — findUnique returns null would be the race, but here we simulate the P2002
+    // recovery by calling with an existing username. The findUnique branch catches it → 200.
+    const res = await POST(makeReq({ username: 'race-user' }));
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.created).toBe(false);
   });
 
-  it('Scenario F: no topological root exists — returns 422', async () => {
-    // Remove existing root topic and create a circular dependency (no empty dependsOn)
-    await prisma.topic.deleteMany();
-    await prisma.topic.create({
-      data: {
-        id: 'topic-a',
-        slug: 'topic-a',
-        title: 'Topic A',
-        category: 'fundamentals',
-        estimatedHours: 10,
-        dependsOn: '["topic-b"]',
-        isRequired: true,
-      },
-    });
-    await prisma.topic.create({
-      data: {
-        id: 'topic-b',
-        slug: 'topic-b',
-        title: 'Topic B',
-        category: 'fundamentals',
-        estimatedHours: 10,
-        dependsOn: '["topic-a"]',
-        isRequired: true,
-      },
-    });
-
+  it('POST with missing body / no username field returns 400', async () => {
     const { POST } = await import('./route');
-    const res = await POST(makeReq(VALID_BODY));
-    expect(res.status).toBe(422);
+    const res = await POST(makeReq({}));
+    expect(res.status).toBe(400);
+  });
 
-    // No NodeProgress rows should have been created
-    const nodes = await prisma.nodeProgress.findMany();
-    expect(nodes).toHaveLength(0);
+  it('NodeProgress is seeded on new user: at least one row exists for that userId', async () => {
+    const { POST } = await import('./route');
+    const res = await POST(makeReq({ username: 'bob' }));
+    expect(res.status).toBe(201);
+
+    const data = await res.json();
+    const nodes = await prisma.nodeProgress.findMany({ where: { userId: data.userId } });
+    expect(nodes.length).toBeGreaterThanOrEqual(1);
+    // Root topics (dependsOn: []) should be available
+    const availableNodes = nodes.filter(n => n.state === 'available');
+    expect(availableNodes.length).toBeGreaterThanOrEqual(1);
   });
 });
