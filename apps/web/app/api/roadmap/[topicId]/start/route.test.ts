@@ -22,7 +22,6 @@ describe('POST /api/roadmap/[topicId]/start', () => {
     await prisma.nodeProgress.deleteMany();
     await prisma.pillReview.deleteMany();
     await prisma.validation.deleteMany();
-    await prisma.userProfile.deleteMany();
     await prisma.user.deleteMany();
     await prisma.resource.deleteMany();
     await prisma.pill.deleteMany();
@@ -30,7 +29,7 @@ describe('POST /api/roadmap/[topicId]/start', () => {
 
     await prisma.topic.create({ data: TOPIC });
     await prisma.user.create({
-      data: { id: 'user-start-1', email: 'start@elite.com', targetDays: 180 },
+      data: { id: 'user-start-1', username: 'start-user', targetDays: 180 },
     });
   });
 

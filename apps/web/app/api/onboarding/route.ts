@@ -1,85 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@elite/db';
+import { setSessionCookie } from '@/lib/session';
 
-const REQUIRED_FIELDS = ['email', 'currentRole', 'yearsExp', 'targetRole', 'goalDeadline'] as const;
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => null);
+  const username = body?.username?.trim();
+  if (!username) return NextResponse.json({ error: 'username required' }, { status: 400 });
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-
-  for (const field of REQUIRED_FIELDS) {
-    if (body[field] === undefined || body[field] === null || body[field] === '') {
-      return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
-    }
+  let user = await prisma.user.findUnique({ where: { username } });
+  if (user) {
+    setSessionCookie(user.id);
+    return NextResponse.json({ userId: user.id, created: false }, { status: 200 });
   }
 
-  const existing = await prisma.user.findUnique({ where: { email: body.email } });
-  if (existing) {
-    return NextResponse.json({ error: 'User already exists' }, { status: 409 });
-  }
-
-  let result: { userId: string; profileId: string; nodesSeeded: number };
-  try {
-    result = await prisma.$transaction(async (tx) => {
-    const goalDeadline = new Date(body.goalDeadline);
-    const now = new Date();
-    const diffMs = goalDeadline.getTime() - now.getTime();
-    const targetDays = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-
-    const user = await tx.user.create({
-      data: {
-        email: body.email,
-        targetDays,
-      },
-    });
-
-    const profile = await tx.userProfile.create({
-      data: {
-        userId: user.id,
-        currentRole: body.currentRole,
-        yearsExp: Number(body.yearsExp),
-        targetRole: body.targetRole,
-        weakAreas: JSON.stringify(body.weakAreas ?? []),
-        goalDeadline: new Date(body.goalDeadline),
-      },
-    });
-
-    const topics = await tx.topic.findMany({
-      where: { isRequired: true },
-      orderBy: { id: 'asc' },
-    });
-
-    const roots = topics.filter(
-      (t) => (JSON.parse(t.dependsOn) as string[]).length === 0
+  // New user — create + seed NodeProgress
+  user = await prisma.user.create({ data: { username } });
+  const topics = await prisma.topic.findMany({ where: { isRequired: true }, orderBy: { id: 'asc' } });
+  if (topics.length > 0) {
+    // Find roots (empty dependsOn) → available, rest → locked
+    await prisma.$transaction(
+      topics.map((t) => {
+        const deps = JSON.parse(t.dependsOn || '[]') as string[];
+        const state = deps.length === 0 ? 'available' : 'locked';
+        return prisma.nodeProgress.create({ data: { userId: user!.id, topicId: t.id, state } });
+      })
     );
-
-    if (roots.length === 0) {
-      throw new Error('NO_TOPOLOGICAL_ROOT');
-    }
-
-    const rootIds = new Set(roots.map((r) => r.id));
-
-    await tx.nodeProgress.createMany({
-      data: topics.map((topic) => ({
-        userId: user.id,
-        topicId: topic.id,
-        state: rootIds.has(topic.id) ? 'available' : 'locked',
-      })),
-    });
-
-      return { userId: user.id, profileId: profile.id, nodesSeeded: topics.length };
-    });
-  } catch (err) {
-    if (err instanceof Error && err.message === 'NO_TOPOLOGICAL_ROOT') {
-      return NextResponse.json(
-        { error: 'No topological root found: all topics have dependencies' },
-        { status: 422 }
-      );
-    }
-    throw err;
   }
 
-  return NextResponse.json(
-    { userId: result.userId, profileId: result.profileId, nodesSeeded: result.nodesSeeded },
-    { status: 201 }
-  );
+  setSessionCookie(user.id);
+  return NextResponse.json({ userId: user.id, created: true }, { status: 201 });
 }

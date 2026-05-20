@@ -36,7 +36,6 @@ describe('GET /api/roadmap', () => {
     await prisma.nodeProgress.deleteMany();
     await prisma.pillReview.deleteMany();
     await prisma.validation.deleteMany();
-    await prisma.userProfile.deleteMany();
     await prisma.user.deleteMany();
     await prisma.resource.deleteMany();
     await prisma.pill.deleteMany();
@@ -49,7 +48,7 @@ describe('GET /api/roadmap', () => {
     await prisma.user.create({
       data: {
         id: 'user-1',
-        email: 'test@elite.com',
+        username: 'test-user',
         targetDays: 180,
       },
     });

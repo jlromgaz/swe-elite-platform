@@ -42,14 +42,13 @@ describe('POST /api/roadmap/[topicId]/complete', () => {
     await prisma.nodeProgress.deleteMany();
     await prisma.pillReview.deleteMany();
     await prisma.validation.deleteMany();
-    await prisma.userProfile.deleteMany();
     await prisma.user.deleteMany();
     await prisma.resource.deleteMany();
     await prisma.pill.deleteMany();
     await prisma.topic.deleteMany();
 
     await prisma.user.create({
-      data: { id: 'user-complete-1', email: 'complete@elite.com', targetDays: 180 },
+      data: { id: 'user-complete-1', username: 'complete-user', targetDays: 180 },
     });
   });
 

@@ -37,14 +37,13 @@ describe('POST /api/validations/[topicId]/submit', () => {
   beforeEach(async () => {
     await prisma.validation.deleteMany();
     await prisma.nodeProgress.deleteMany();
-    await prisma.userProfile.deleteMany();
     await prisma.user.deleteMany();
     await prisma.resource.deleteMany();
     await prisma.pill.deleteMany();
     await prisma.topic.deleteMany();
 
     await prisma.user.create({
-      data: { id: USER_ID, email: USER_EMAIL, targetDays: 180 },
+      data: { id: USER_ID, username: 'validation-user', targetDays: 180 },
     });
 
     for (const t of SEEDED_TOPICS) {

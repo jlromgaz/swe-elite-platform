@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@elite/db': path.resolve(__dirname, '../../packages/db/src/index.ts'),
+      '@': path.resolve(__dirname),
     },
   },
   test: {
