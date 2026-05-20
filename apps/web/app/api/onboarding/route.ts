@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@elite/db';
 
-const REQUIRED_FIELDS = ['email', 'targetMonths', 'currentRole', 'yearsExp', 'targetRole', 'goalDeadline'] as const;
+const REQUIRED_FIELDS = ['email', 'currentRole', 'yearsExp', 'targetRole', 'goalDeadline'] as const;
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -20,10 +20,15 @@ export async function POST(request: NextRequest) {
   let result: { userId: string; profileId: string; nodesSeeded: number };
   try {
     result = await prisma.$transaction(async (tx) => {
+    const goalDeadline = new Date(body.goalDeadline);
+    const now = new Date();
+    const diffMs = goalDeadline.getTime() - now.getTime();
+    const targetDays = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+
     const user = await tx.user.create({
       data: {
         email: body.email,
-        targetMonths: Number(body.targetMonths),
+        targetDays,
       },
     });
 

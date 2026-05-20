@@ -30,7 +30,7 @@ describe('POST /api/roadmap/[topicId]/start', () => {
 
     await prisma.topic.create({ data: TOPIC });
     await prisma.user.create({
-      data: { id: 'user-start-1', email: 'start@elite.com', targetMonths: 6 },
+      data: { id: 'user-start-1', email: 'start@elite.com', targetDays: 180 },
     });
   });
 

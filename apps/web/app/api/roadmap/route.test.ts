@@ -50,7 +50,7 @@ describe('GET /api/roadmap', () => {
       data: {
         id: 'user-1',
         email: 'test@elite.com',
-        targetMonths: 6,
+        targetDays: 180,
       },
     });
   });

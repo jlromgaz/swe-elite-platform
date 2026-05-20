@@ -10,7 +10,7 @@ datasource db {
 model User {
   id           String        @id @default(uuid())
   email        String        @unique
-  targetMonths Int           @default(6)
+  targetDays   Int           @default(180)
   locale       String        @default("en")
   createdAt    DateTime      @default(now())
   profile      UserProfile?

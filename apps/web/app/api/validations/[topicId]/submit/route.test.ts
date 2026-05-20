@@ -44,7 +44,7 @@ describe('POST /api/validations/[topicId]/submit', () => {
     await prisma.topic.deleteMany();
 
     await prisma.user.create({
-      data: { id: USER_ID, email: USER_EMAIL, targetMonths: 6 },
+      data: { id: USER_ID, email: USER_EMAIL, targetDays: 180 },
     });
 
     for (const t of SEEDED_TOPICS) {

@@ -4,7 +4,6 @@ import { NextRequest } from 'next/server';
 
 const VALID_BODY = {
   email: 'onboard@elite.com',
-  targetMonths: 6,
   currentRole: 'junior',
   yearsExp: 2,
   targetRole: 'staff-engineer',

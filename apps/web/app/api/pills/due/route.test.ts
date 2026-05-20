@@ -18,7 +18,7 @@ const TEST_TOPIC = {
 const TEST_USER = {
   id: 'user-due-1',
   email: 'due@elite.com',
-  targetMonths: 6,
+  targetDays: 180,
 };
 
 const TEST_PILL = {

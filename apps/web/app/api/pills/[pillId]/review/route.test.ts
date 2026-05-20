@@ -30,7 +30,7 @@ const TEST_TOPIC = {
 const TEST_USER = {
   id: 'user-review-1',
   email: 'review@elite.com',
-  targetMonths: 6,
+  targetDays: 180,
 };
 
 const TEST_PILL = {

@@ -34,19 +34,19 @@ describe('packages/db — Prisma client', () => {
 
   it('creates a User with UUID id and createdAt timestamp', async () => {
     const user = await prisma.user.create({
-      data: { email: 'schema-test@elite.com', targetMonths: 6 },
+      data: { email: 'schema-test@elite.com', targetDays: 180 },
     });
 
     expect(user.id).toBeDefined();
     expect(user.id).toMatch(/^[0-9a-f-]{36}$/);
     expect(user.createdAt).toBeInstanceOf(Date);
     expect(user.email).toBe('schema-test@elite.com');
-    expect(user.targetMonths).toBe(6);
+    expect(user.targetDays).toBe(180);
   });
 
   it('enforces @@unique([userId, topicId]) on NodeProgress', async () => {
     const user = await prisma.user.create({
-      data: { email: 'unique-test@elite.com', targetMonths: 3 },
+      data: { email: 'unique-test@elite.com', targetDays: 90 },
     });
 
     await prisma.nodeProgress.create({

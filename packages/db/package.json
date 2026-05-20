@@ -9,7 +9,7 @@
     "db:seed": "DATABASE_URL='file:./dev.db' ts-node prisma/seed.ts"
   },
   "prisma": {
-    "seed": "DATABASE_URL='file:./dev.db' ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0"

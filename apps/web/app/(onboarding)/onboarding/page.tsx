@@ -15,7 +15,6 @@ export default function OnboardingPage() {
     const form = e.currentTarget;
     const data = {
       email: (form.elements.namedItem('email') as HTMLInputElement).value,
-      targetMonths: Number((form.elements.namedItem('targetMonths') as HTMLInputElement).value),
       currentRole: (form.elements.namedItem('currentRole') as HTMLInputElement).value,
       yearsExp: Number((form.elements.namedItem('yearsExp') as HTMLInputElement).value),
       targetRole: (form.elements.namedItem('targetRole') as HTMLInputElement).value,
@@ -117,22 +116,6 @@ export default function OnboardingPage() {
               required
               className="border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
               placeholder="e.g. Senior Software Engineer"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label htmlFor="targetMonths" className="text-sm font-medium text-slate-700">
-              Target Months to Goal
-            </label>
-            <input
-              id="targetMonths"
-              name="targetMonths"
-              type="number"
-              required
-              min="1"
-              max="120"
-              className="border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
-              placeholder="12"
             />
           </div>
 
