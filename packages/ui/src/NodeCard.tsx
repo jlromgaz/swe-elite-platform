@@ -8,6 +8,8 @@ export type TopicNodeData = {
   title: string;
   state: NodeState;
   estimatedHours: number;
+  topicId?: string;
+  onReset?: (topicId: string) => void;
 };
 
 const BADGE_BG: Record<NodeState, string> = {
@@ -34,7 +36,7 @@ const BADGE_LABEL: Record<NodeState, string> = {
 export type TopicNodeProps = NodeProps & { data: TopicNodeData };
 
 function NodeCard({ data }: TopicNodeProps) {
-  const { title, state, estimatedHours } = data;
+  const { title, state, estimatedHours, topicId, onReset } = data;
 
   return (
     <div
@@ -45,9 +47,36 @@ function NodeCard({ data }: TopicNodeProps) {
         background: '#fff',
         minWidth: 160,
         boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+        position: 'relative',
       }}
     >
       <Handle type="target" position={Position.Left} />
+
+      {state === 'mastered' && onReset && topicId && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onReset(topicId);
+          }}
+          style={{
+            position: 'absolute',
+            top: 4,
+            right: 4,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: 14,
+            color: '#9ca3af',
+            padding: '0 4px',
+            lineHeight: 1,
+          }}
+          title="Reset progress"
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = '#9ca3af'; }}
+        >
+          ↩
+        </button>
+      )}
 
       <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>{title}</div>
 

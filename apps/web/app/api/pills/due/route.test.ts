@@ -17,7 +17,7 @@ const TEST_TOPIC = {
 
 const TEST_USER = {
   id: 'user-due-1',
-  email: 'due@elite.com',
+  username: 'due-user',
   targetDays: 180,
 };
 
@@ -34,7 +34,6 @@ describe('GET /api/pills/due', () => {
     await prisma.pillReview.deleteMany();
     await prisma.pill.deleteMany();
     await prisma.nodeProgress.deleteMany();
-    await prisma.userProfile.deleteMany();
     await prisma.user.deleteMany();
     await prisma.topic.deleteMany();
   });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeUnlocks } from './roadmap-cascade';
+import { computeUnlocks, computeRelock } from './roadmap-cascade';
 
 type NodeState = 'locked' | 'available' | 'in_progress' | 'mastered';
 
@@ -119,5 +119,103 @@ describe('computeUnlocks', () => {
     ]);
     const result = computeUnlocks(topics, progressMap, 'root1');
     expect(result).not.toContain('root2');
+  });
+});
+
+describe('computeRelock', () => {
+  it('SC-1: reset mastered with no downstream → empty result', () => {
+    const topics = [
+      { id: 'a', dependsOn: '[]' },
+    ];
+    const progressMap = new Map<string, NodeState>([
+      ['a', 'available'],
+    ]);
+    const result = computeRelock(topics, progressMap, 'a');
+    expect(result).toEqual([]);
+  });
+
+  it('SC-2: reset mastered with exclusive downstream → downstream relocks', () => {
+    const topics = [
+      { id: 'a', dependsOn: '[]' },
+      { id: 'b', dependsOn: '["a"]' },
+    ];
+    const progressMap = new Map<string, NodeState>([
+      ['a', 'available'],
+      ['b', 'available'],
+    ]);
+    const result = computeRelock(topics, progressMap, 'a');
+    expect(result).toContain('b');
+  });
+
+  it('SC-3: reset mastered with shared downstream → downstream stays (other dep mastered)', () => {
+    const topics = [
+      { id: 'a', dependsOn: '[]' },
+      { id: 'c', dependsOn: '[]' },
+      { id: 'd', dependsOn: '["a", "c"]' },
+    ];
+    const progressMap = new Map<string, NodeState>([
+      ['a', 'available'],
+      ['c', 'mastered'],
+      ['d', 'available'],
+    ]);
+    const result = computeRelock(topics, progressMap, 'a');
+    expect(result).not.toContain('d');
+  });
+
+  it('SC-4: recursive cascade — A reset, B depends only on A, C depends only on B', () => {
+    const topics = [
+      { id: 'a', dependsOn: '[]' },
+      { id: 'b', dependsOn: '["a"]' },
+      { id: 'c', dependsOn: '["b"]' },
+    ];
+    const progressMap = new Map<string, NodeState>([
+      ['a', 'available'],
+      ['b', 'available'],
+      ['c', 'available'],
+    ]);
+    const result = computeRelock(topics, progressMap, 'a');
+    expect(result).toContain('b');
+    expect(result).toContain('c');
+  });
+
+  it('exclusive downstream that is mastered also gets relocked', () => {
+    const topics = [
+      { id: 'a', dependsOn: '[]' },
+      { id: 'b', dependsOn: '["a"]' },
+    ];
+    const progressMap = new Map<string, NodeState>([
+      ['a', 'available'],
+      ['b', 'mastered'],
+    ]);
+    const result = computeRelock(topics, progressMap, 'a');
+    expect(result).toContain('b');
+  });
+
+  it('downstream with other mastered dep stays (even if mastered)', () => {
+    const topics = [
+      { id: 'a', dependsOn: '[]' },
+      { id: 'b', dependsOn: '[]' },
+      { id: 'c', dependsOn: '["a", "b"]' },
+    ];
+    const progressMap = new Map<string, NodeState>([
+      ['a', 'available'],
+      ['b', 'mastered'],
+      ['c', 'mastered'],
+    ]);
+    const result = computeRelock(topics, progressMap, 'a');
+    expect(result).not.toContain('c');
+  });
+
+  it('reset topic itself is not in the result', () => {
+    const topics = [
+      { id: 'a', dependsOn: '[]' },
+      { id: 'b', dependsOn: '["a"]' },
+    ];
+    const progressMap = new Map<string, NodeState>([
+      ['a', 'available'],
+      ['b', 'available'],
+    ]);
+    const result = computeRelock(topics, progressMap, 'a');
+    expect(result).not.toContain('a');
   });
 });

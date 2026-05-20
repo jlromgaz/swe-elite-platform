@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@elite/db';
 import { computeNextReview } from '../../../../../lib/srs';
+import { getSessionUserId } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,15 +39,15 @@ export async function POST(
     return NextResponse.json({ error: 'Pill not found' }, { status: 404 });
   }
 
-  // Get current user
-  const user = await prisma.user.findFirst();
-  if (!user) {
-    return NextResponse.json({ error: 'No user found' }, { status: 404 });
+  // Get current user from session
+  const userId = await getSessionUserId();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   // Get existing review if any
   const existing = await prisma.pillReview.findUnique({
-    where: { userId_pillId: { userId: user.id, pillId } },
+    where: { userId_pillId: { userId, pillId } },
   });
 
   const currentReviewCount = existing?.reviewCount ?? 0;
@@ -54,10 +55,10 @@ export async function POST(
 
   // Upsert PillReview
   await prisma.pillReview.upsert({
-    where: { userId_pillId: { userId: user.id, pillId } },
+    where: { userId_pillId: { userId, pillId } },
     update: { reviewCount: newReviewCount, nextReview, lastScore: score },
     create: {
-      userId: user.id,
+      userId,
       pillId,
       reviewCount: newReviewCount,
       nextReview,

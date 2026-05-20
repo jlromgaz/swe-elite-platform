@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@elite/db';
+import { getSessionUserId } from '@/lib/session';
 
 type NodeState = 'locked' | 'available' | 'in_progress' | 'mastered';
 
@@ -18,19 +19,16 @@ type RoadmapEdge = {
   target: string;
 };
 
-async function getCurrentUserId(): Promise<string | null> {
-  const user = await prisma.user.findFirst();
-  return user?.id ?? null;
-}
-
 export async function GET() {
-  const userId = await getCurrentUserId();
+  const userId = await getSessionUserId();
+
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const topics = await prisma.topic.findMany();
 
-  const progressRows = userId
-    ? await prisma.nodeProgress.findMany({ where: { userId } })
-    : [];
+  const progressRows = await prisma.nodeProgress.findMany({ where: { userId } });
 
   const progressMap = new Map(progressRows.map((p) => [p.topicId, p.state as NodeState]));
 

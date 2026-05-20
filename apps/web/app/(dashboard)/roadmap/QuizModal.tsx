@@ -21,14 +21,23 @@ export default function QuizModal({ topicId, onClose }: QuizModalProps) {
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [status, setStatus] = useState<SubmitStatus>('idle');
+  const [notFound, setNotFound] = useState(false);
   const [unlocked, setUnlocked] = useState<string[]>([]);
 
   useEffect(() => {
     fetch(`/api/validations/${topicId}`)
-      .then((res) => res.json())
-      .then((data: QuizData) => setQuiz(data))
+      .then((res) => {
+        if (!res.ok) {
+          setNotFound(true);
+          return null;
+        }
+        return res.json();
+      })
+      .then((data: QuizData | null) => {
+        if (data && data.options) setQuiz(data);
+      })
       .catch(() => {
-        // silently fail — modal stays blank
+        setNotFound(true);
       });
   }, [topicId]);
 
@@ -83,7 +92,28 @@ export default function QuizModal({ topicId, onClose }: QuizModalProps) {
         }}
       >
         {!quiz ? (
-          <p style={{ textAlign: 'center', color: '#6b7280' }}>Loading quiz...</p>
+          notFound ? (
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ color: '#6b7280', marginBottom: '16px' }}>
+                Validation quiz not yet available for this topic.
+              </p>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                Close
+              </button>
+            </div>
+          ) : (
+            <p style={{ textAlign: 'center', color: '#6b7280' }}>Loading quiz...</p>
+          )
         ) : status === 'passed' ? (
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: '24px', marginBottom: '8px' }}>Mastered!</p>

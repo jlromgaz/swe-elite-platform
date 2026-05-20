@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@elite/db': path.resolve(__dirname, '../../packages/db/src/index.ts'),
+      '@': path.resolve(__dirname),
     },
   },
   test: {
@@ -12,6 +13,7 @@ export default defineConfig({
     env: {
       DATABASE_URL: 'file:./test.db',
     },
+    setupFiles: ['./vitest.setup.ts'],
     pool: 'forks',
     poolOptions: {
       forks: {

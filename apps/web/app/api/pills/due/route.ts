@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@elite/db';
+import { getSessionUserId } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(_req: NextRequest) {
-  const user = await prisma.user.findFirst();
+  const userId = await getSessionUserId();
 
-  if (!user) {
+  if (!userId) {
     return NextResponse.json([]);
   }
 
@@ -22,12 +23,12 @@ export async function GET(_req: NextRequest) {
       topic: {
         progress: {
           some: {
-            userId: user.id,
+            userId,
             state: { in: ['in_progress', 'mastered'] },
           },
         },
       },
-      reviews: { none: { userId: user.id } },
+      reviews: { none: { userId } },
     },
     include: { topic: { select: { title: true } } },
     orderBy: { id: 'asc' },
@@ -39,12 +40,12 @@ export async function GET(_req: NextRequest) {
       topic: {
         progress: {
           some: {
-            userId: user.id,
+            userId,
             state: { in: ['in_progress', 'mastered'] },
           },
         },
       },
-      reviews: { some: { userId: user.id, nextReview: { lte: now } } },
+      reviews: { some: { userId, nextReview: { lte: now } } },
     },
     include: { topic: { select: { title: true } } },
     orderBy: { id: 'asc' },

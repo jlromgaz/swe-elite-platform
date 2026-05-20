@@ -16,7 +16,6 @@ describe('packages/db — Prisma client', () => {
     await prisma.nodeProgress.deleteMany();
     await prisma.pillReview.deleteMany();
     await prisma.validation.deleteMany();
-    await prisma.userProfile.deleteMany();
     await prisma.user.deleteMany();
     await prisma.resource.deleteMany();
     await prisma.pill.deleteMany();
@@ -26,7 +25,6 @@ describe('packages/db — Prisma client', () => {
 
   afterAll(async () => {
     await prisma.nodeProgress.deleteMany();
-    await prisma.userProfile.deleteMany();
     await prisma.user.deleteMany();
     await prisma.topic.deleteMany();
     await prisma.$disconnect();
@@ -34,7 +32,7 @@ describe('packages/db — Prisma client', () => {
 
   it('creates a User with UUID id and createdAt timestamp', async () => {
     const user = await prisma.user.create({
-      data: { email: 'schema-test@elite.com', targetDays: 180 },
+      data: { email: 'schema-test@elite.com', username: 'schema-test', targetDays: 180 },
     });
 
     expect(user.id).toBeDefined();
@@ -46,7 +44,7 @@ describe('packages/db — Prisma client', () => {
 
   it('enforces @@unique([userId, topicId]) on NodeProgress', async () => {
     const user = await prisma.user.create({
-      data: { email: 'unique-test@elite.com', targetDays: 90 },
+      data: { email: 'unique-test@elite.com', username: 'unique-test', targetDays: 90 },
     });
 
     await prisma.nodeProgress.create({
