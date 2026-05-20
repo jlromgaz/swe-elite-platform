@@ -1,5 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
+export { QUIZ_BANK } from './quiz-bank';
+export type { QuizEntry } from './quiz-bank';
+
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 export const prisma =
