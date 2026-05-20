@@ -26,13 +26,23 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const node = await prisma.customNode.create({
-    data: {
-      userId,
-      title: title.trim(),
-      dependsOn: JSON.stringify(Array.isArray(dependsOn) ? dependsOn : []),
-    },
-  });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    return NextResponse.json({ error: 'Session invalid. Please log out and start over.' }, { status: 401 });
+  }
 
-  return NextResponse.json(node, { status: 201 });
+  try {
+    const node = await prisma.customNode.create({
+      data: {
+        userId,
+        title: title.trim(),
+        dependsOn: JSON.stringify(Array.isArray(dependsOn) ? dependsOn : []),
+      },
+    });
+
+    return NextResponse.json(node, { status: 201 });
+  } catch (error) {
+    console.error('Failed to create custom node:', error);
+    return NextResponse.json({ error: 'Failed to create custom node' }, { status: 500 });
+  }
 }
