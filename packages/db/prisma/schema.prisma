@@ -9,26 +9,14 @@ datasource db {
 
 model User {
   id           String        @id @default(uuid())
-  email        String        @unique
+  username     String        @unique
+  email        String?       @unique
   targetDays   Int           @default(180)
   locale       String        @default("en")
   createdAt    DateTime      @default(now())
-  profile      UserProfile?
   progress     NodeProgress[]
   pillReviews  PillReview[]
   validations  Validation[]
-}
-
-model UserProfile {
-  id             String   @id @default(uuid())
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id])
-  currentRole    String
-  yearsExp       Int
-  targetRole     String
-  weakAreas      String
-  goalDeadline   DateTime
-  onboardingDone Boolean  @default(false)
 }
 
 model Topic {
