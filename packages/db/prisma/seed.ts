@@ -665,9 +665,6 @@ async function main() {
   const deletedPillReviews = await prisma.pillReview.deleteMany({});
   console.log(`Deleted ${deletedPillReviews.count} pill review records.`);
 
-  const deletedProfiles = await prisma.userProfile.deleteMany({});
-  console.log(`Deleted ${deletedProfiles.count} user profile records.`);
-
   const deletedUsers = await prisma.user.deleteMany({});
   console.log(`Deleted ${deletedUsers.count} user records.`);
 
