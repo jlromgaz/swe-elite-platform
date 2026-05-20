@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic';
 
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { prisma } from '@elite/db';
 
-const PillQueueClient = dynamic(() => import('./PillQueue'), { ssr: false });
+const PillQueueClient = dynamicImport(() => import('./PillQueue'), { ssr: false });
 
 export default async function PillsPage() {
   const user = await prisma.user.findFirst();
