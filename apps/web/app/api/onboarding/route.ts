@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@elite/db';
 import { setSessionCookie } from '@/lib/session';
 
@@ -14,7 +15,17 @@ export async function POST(req: NextRequest) {
   }
 
   // New user — create + seed NodeProgress
-  user = await prisma.user.create({ data: { username } });
+  // P2002 guard: concurrent request may have created the same username between findUnique and create
+  try {
+    user = await prisma.user.create({ data: { username } });
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      user = await prisma.user.findUnique({ where: { username } }) as NonNullable<typeof user>;
+      setSessionCookie(user.id);
+      return NextResponse.json({ userId: user.id, created: false }, { status: 200 });
+    }
+    throw e;
+  }
   const topics = await prisma.topic.findMany({ where: { isRequired: true }, orderBy: { id: 'asc' } });
   if (topics.length > 0) {
     // Find roots (empty dependsOn) → available, rest → locked
