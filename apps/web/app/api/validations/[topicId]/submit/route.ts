@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, QUIZ_BANK } from '@elite/db';
 import { computeUnlocks } from '../../../../../lib/roadmap-cascade';
+import { getSessionUserId } from '@/lib/session';
 
 type NodeState = 'locked' | 'available' | 'in_progress' | 'mastered';
 
@@ -29,12 +30,11 @@ export async function POST(
     return NextResponse.json({ error: 'Quiz not found for topic' }, { status: 404 });
   }
 
-  // Get current user
-  const user = await prisma.user.findFirst();
-  if (!user) {
-    return NextResponse.json({ error: 'No user found' }, { status: 404 });
+  // Get current user from session
+  const userId = getSessionUserId();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const userId = user.id;
 
   // Find node progress
   const nodeProgress = await prisma.nodeProgress.findUnique({

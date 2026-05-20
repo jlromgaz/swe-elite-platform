@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@elite/db';
+import { getSessionUserId } from '@/lib/session';
 
 type NodeState = 'locked' | 'available' | 'in_progress' | 'mastered';
-
-async function getCurrentUserId(): Promise<string | null> {
-  const user = await prisma.user.findFirst();
-  return user?.id ?? null;
-}
 
 export async function POST(
   _req: NextRequest,
   context: { params: { topicId: string } }
 ) {
   const { topicId } = context.params;
-  const userId = await getCurrentUserId();
+  const userId = getSessionUserId();
 
   if (!userId) {
-    return NextResponse.json({ error: 'No user found' }, { status: 404 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const topic = await prisma.topic.findUnique({ where: { id: topicId } });

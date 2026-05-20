@@ -1,19 +1,17 @@
 export const dynamic = 'force-dynamic';
 
+import { redirect } from 'next/navigation';
 import dynamicImport from 'next/dynamic';
 import { prisma } from '@elite/db';
+import { getSessionUserId } from '@/lib/session';
 
 const PillQueueClient = dynamicImport(() => import('./PillQueue'), { ssr: false });
 
 export default async function PillsPage() {
-  const user = await prisma.user.findFirst();
+  const userId = getSessionUserId();
 
-  if (!user) {
-    return (
-      <div style={{ padding: '60px 24px', textAlign: 'center', color: '#6b7280' }}>
-        No user found. Please complete onboarding first.
-      </div>
-    );
+  if (!userId) {
+    redirect('/onboarding');
   }
 
   const now = new Date();
@@ -24,12 +22,12 @@ export default async function PillsPage() {
       topic: {
         progress: {
           some: {
-            userId: user.id,
+            userId,
             state: { in: ['in_progress', 'mastered'] },
           },
         },
       },
-      reviews: { none: { userId: user.id } },
+      reviews: { none: { userId } },
     },
     include: { topic: { select: { title: true } } },
     orderBy: { id: 'asc' },
@@ -40,12 +38,12 @@ export default async function PillsPage() {
       topic: {
         progress: {
           some: {
-            userId: user.id,
+            userId,
             state: { in: ['in_progress', 'mastered'] },
           },
         },
       },
-      reviews: { some: { userId: user.id, nextReview: { lte: now } } },
+      reviews: { some: { userId, nextReview: { lte: now } } },
     },
     include: { topic: { select: { title: true } } },
     orderBy: { id: 'asc' },

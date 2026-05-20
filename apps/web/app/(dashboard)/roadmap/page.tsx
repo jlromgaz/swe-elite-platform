@@ -4,21 +4,22 @@ import { redirect } from 'next/navigation';
 import dynamicImport from 'next/dynamic';
 import type { Node, Edge } from '@xyflow/react';
 import { prisma } from '@elite/db';
+import { getSessionUserId } from '@/lib/session';
 
 const ReactFlowCanvas = dynamicImport(() => import('./ReactFlowCanvas'), { ssr: false });
 
 type NodeState = 'locked' | 'available' | 'in_progress' | 'mastered';
 
 export default async function RoadmapPage() {
-  const user = await prisma.user.findFirst();
+  const userId = getSessionUserId();
 
-  if (!user) {
+  if (!userId) {
     redirect('/onboarding');
   }
 
   const topics = await prisma.topic.findMany();
   const nodeProgress = await prisma.nodeProgress.findMany({
-    where: { userId: user.id },
+    where: { userId },
   });
 
   const progressMap = new Map(
