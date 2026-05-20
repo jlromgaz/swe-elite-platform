@@ -57,7 +57,7 @@ export default async function RoadmapPage() {
   }
 
   return (
-    <div style={{ height: '100vh', width: '100%' }}>
+    <div style={{ height: 'calc(100vh - 56px)', width: '100%' }}>
       <ReactFlowCanvas initialNodes={nodes} initialEdges={edges} />
     </div>
   );

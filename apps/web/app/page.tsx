@@ -1,7 +1,7 @@
-export default function Home() {
-  return (
-    <main>
-      <h1>SWE Elite Platform</h1>
-    </main>
-  );
+import { redirect } from 'next/navigation';
+import { prisma } from '@elite/db';
+
+export default async function Home() {
+  const user = await prisma.user.findFirst();
+  redirect(user ? '/roadmap' : '/onboarding');
 }
