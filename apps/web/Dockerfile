@@ -1,7 +1,7 @@
 FROM node:20-alpine
 
-# Native build deps required for better-sqlite3 bindings
-RUN apk add --no-cache python3 make g++
+# Native build deps required for better-sqlite3 bindings + openssl for Prisma engine
+RUN apk add --no-cache python3 make g++ openssl
 
 WORKDIR /app
 
