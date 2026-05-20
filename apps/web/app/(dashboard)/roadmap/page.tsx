@@ -1,9 +1,11 @@
+export const dynamic = 'force-dynamic';
+
 import { redirect } from 'next/navigation';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import type { Node, Edge } from '@xyflow/react';
 import { prisma } from '@elite/db';
 
-const ReactFlowCanvas = dynamic(() => import('./ReactFlowCanvas'), { ssr: false });
+const ReactFlowCanvas = dynamicImport(() => import('./ReactFlowCanvas'), { ssr: false });
 
 type NodeState = 'locked' | 'available' | 'in_progress' | 'mastered';
 
