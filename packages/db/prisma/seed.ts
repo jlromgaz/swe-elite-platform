@@ -584,6 +584,9 @@ async function main() {
 
   // Reset all user progress so the roadmap can be tested fresh
   console.log('Resetting user progress...');
+  const deletedResourceProgress = await prisma.userResourceProgress.deleteMany({});
+  console.log(`Deleted ${deletedResourceProgress.count} resource progress records.`);
+
   const deletedProgress = await prisma.nodeProgress.deleteMany({});
   console.log(`Deleted ${deletedProgress.count} progress records.`);
 

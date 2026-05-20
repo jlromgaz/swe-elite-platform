@@ -6,15 +6,17 @@ export async function GET(
   context: { params: { topicId: string } }
 ) {
   const { topicId } = context.params;
-  const entry = QUIZ_BANK[topicId];
+  const entries = QUIZ_BANK[topicId];
 
-  if (!entry) {
+  if (!entries || entries.length === 0) {
     return NextResponse.json({ error: 'Quiz not found for topic' }, { status: 404 });
   }
 
   return NextResponse.json({
     topicId,
-    question: entry.question,
-    options: entry.options,
+    questions: entries.map(e => ({
+      question: e.question,
+      options: e.options,
+    }))
   });
 }

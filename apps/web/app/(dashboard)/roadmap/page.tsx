@@ -31,9 +31,7 @@ export default async function RoadmapPage() {
 
   const nodes: Node[] = topics.map((topic) => {
     const deps = JSON.parse(topic.dependsOn) as string[];
-    const isRoot = deps.length === 0;
-    const state: NodeState =
-      progressMap.get(topic.id) ?? (isRoot ? 'available' : 'locked');
+    const state: NodeState = progressMap.get(topic.id) ?? 'available';
 
     return {
       id: topic.id,

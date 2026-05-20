@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     await prisma.$transaction(
       topics.map((t) => {
         const deps = JSON.parse(t.dependsOn || '[]') as string[];
-        const state = deps.length === 0 ? 'available' : 'locked';
+        const state = 'available';
         return prisma.nodeProgress.create({ data: { userId: user!.id, topicId: t.id, state } });
       })
     );

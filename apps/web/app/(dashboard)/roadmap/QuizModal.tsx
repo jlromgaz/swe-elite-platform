@@ -3,10 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-type QuizData = {
-  topicId: string;
+type QuizQuestion = {
   question: string;
   options: string[];
+};
+
+type QuizData = {
+  topicId: string;
+  questions: QuizQuestion[];
 };
 
 type SubmitStatus = 'idle' | 'submitting' | 'passed' | 'failed';
@@ -19,10 +23,11 @@ type QuizModalProps = {
 export default function QuizModal({ topicId, onClose }: QuizModalProps) {
   const router = useRouter();
   const [quiz, setQuiz] = useState<QuizData | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [status, setStatus] = useState<SubmitStatus>('idle');
   const [notFound, setNotFound] = useState(false);
-  const [unlocked, setUnlocked] = useState<string[]>([]);
+  const [finalScore, setFinalScore] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(`/api/validations/${topicId}`)
@@ -34,7 +39,12 @@ export default function QuizModal({ topicId, onClose }: QuizModalProps) {
         return res.json();
       })
       .then((data: QuizData | null) => {
-        if (data && data.options) setQuiz(data);
+        if (data && data.questions && data.questions.length > 0) {
+          setQuiz(data);
+          setAnswers(new Array(data.questions.length).fill(-1));
+        } else {
+          setNotFound(true);
+        }
       })
       .catch(() => {
         setNotFound(true);
@@ -42,25 +52,26 @@ export default function QuizModal({ topicId, onClose }: QuizModalProps) {
   }, [topicId]);
 
   async function handleSubmit() {
-    if (selectedIndex === null || !quiz) return;
+    if (!quiz || answers.includes(-1)) return;
     setStatus('submitting');
 
     try {
       const res = await fetch(`/api/validations/${topicId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answerIndex: selectedIndex }),
+        body: JSON.stringify({ answers }),
       });
-      const data = await res.json() as { passed: boolean; unlocked?: string[]; alreadyMastered?: boolean };
+      const data = await res.json() as { passed: boolean; score?: number; alreadyMastered?: boolean };
 
+      setFinalScore(data.score ?? 0);
       if (data.passed) {
-        setUnlocked(data.unlocked ?? []);
         setStatus('passed');
       } else {
         setStatus('failed');
       }
     } catch {
       setStatus('failed');
+      setFinalScore(0);
     }
   }
 
@@ -68,6 +79,29 @@ export default function QuizModal({ topicId, onClose }: QuizModalProps) {
     router.refresh();
     onClose();
   }
+
+  function selectAnswer(optionIdx: number) {
+    const newAnswers = [...answers];
+    newAnswers[currentQuestionIdx] = optionIdx;
+    setAnswers(newAnswers);
+  }
+
+  function handleNext() {
+    if (currentQuestionIdx < (quiz?.questions.length ?? 0) - 1) {
+      setCurrentQuestionIdx(prev => prev + 1);
+    }
+  }
+
+  function handlePrev() {
+    if (currentQuestionIdx > 0) {
+      setCurrentQuestionIdx(prev => prev - 1);
+    }
+  }
+
+  const currentQ = quiz?.questions[currentQuestionIdx];
+  const isLastQuestion = currentQuestionIdx === (quiz?.questions.length ?? 0) - 1;
+  const hasAnsweredCurrent = answers[currentQuestionIdx] !== -1;
+  const hasAnsweredAll = answers.every(a => a !== -1);
 
   return (
     <div
@@ -86,7 +120,7 @@ export default function QuizModal({ topicId, onClose }: QuizModalProps) {
           backgroundColor: 'white',
           borderRadius: '8px',
           padding: '24px',
-          maxWidth: '480px',
+          maxWidth: '560px',
           width: '100%',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         }}
@@ -114,12 +148,17 @@ export default function QuizModal({ topicId, onClose }: QuizModalProps) {
           ) : (
             <p style={{ textAlign: 'center', color: '#6b7280' }}>Loading quiz...</p>
           )
-        ) : status === 'passed' ? (
+        ) : status === 'passed' || status === 'failed' ? (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: '24px', marginBottom: '8px' }}>Mastered!</p>
-            {unlocked.length > 0 && (
-              <p style={{ color: '#6b7280', marginBottom: '16px' }}>
-                Unlocked: {unlocked.join(', ')}
+            <p style={{ fontSize: '24px', marginBottom: '8px' }}>
+              {status === 'passed' ? '🎉 Mastered!' : '❌ Failed'}
+            </p>
+            <p style={{ fontSize: '18px', color: status === 'passed' ? '#16a34a' : '#dc2626', marginBottom: '16px' }}>
+              Score: {finalScore}%
+            </p>
+            {status === 'failed' && (
+              <p style={{ color: '#6b7280', marginBottom: '16px', fontSize: '14px' }}>
+                You need 70% to pass. Review the materials and try again!
               </p>
             )}
             <button
@@ -138,70 +177,112 @@ export default function QuizModal({ topicId, onClose }: QuizModalProps) {
           </div>
         ) : (
           <>
-            <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>
-              {quiz.question}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <span style={{ color: '#6b7280', fontSize: '14px' }}>
+                Question {currentQuestionIdx + 1} of {quiz.questions.length}
+              </span>
+              <span style={{ color: '#6b7280', fontSize: '14px' }}>
+                Passing: 70%
+              </span>
+            </div>
+            
+            <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>
+              {currentQ?.question}
             </h2>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-              {quiz.options.map((option, idx) => (
-                <label
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    padding: '8px',
-                    borderRadius: '4px',
-                    border: selectedIndex === idx ? '2px solid #2563eb' : '2px solid #e5e7eb',
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="quiz-option"
-                    value={idx}
-                    checked={selectedIndex === idx}
-                    onChange={() => setSelectedIndex(idx)}
-                  />
-                  {option}
-                </label>
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+              {currentQ?.options.map((option, idx) => {
+                const isSelected = answers[currentQuestionIdx] === idx;
+                return (
+                  <label
+                    key={idx}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      padding: '12px',
+                      borderRadius: '4px',
+                      border: isSelected ? '2px solid #2563eb' : '2px solid #e5e7eb',
+                      backgroundColor: isSelected ? '#eff6ff' : 'transparent',
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name={`quiz-option-${currentQuestionIdx}`}
+                      value={idx}
+                      checked={isSelected}
+                      onChange={() => selectAnswer(idx)}
+                    />
+                    {option}
+                  </label>
+                );
+              })}
             </div>
 
-            {status === 'failed' && (
-              <p style={{ color: '#dc2626', marginBottom: '12px' }}>
-                Incorrect — try again
-              </p>
-            )}
-
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <button
-                onClick={onClose}
+                onClick={handlePrev}
+                disabled={currentQuestionIdx === 0}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: '#f3f4f6',
-                  color: '#374151',
+                  backgroundColor: currentQuestionIdx === 0 ? 'transparent' : '#f3f4f6',
+                  color: currentQuestionIdx === 0 ? 'transparent' : '#374151',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: 'pointer',
+                  cursor: currentQuestionIdx === 0 ? 'default' : 'pointer',
                 }}
               >
-                Cancel
+                Previous
               </button>
-              <button
-                onClick={handleSubmit}
-                disabled={selectedIndex === null || status === 'submitting'}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: selectedIndex === null || status === 'submitting' ? '#9ca3af' : '#2563eb',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: selectedIndex === null || status === 'submitting' ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {status === 'submitting' ? 'Submitting...' : 'Submit'}
-              </button>
+              
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={onClose}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: 'transparent',
+                    color: '#6b7280',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+                
+                {isLastQuestion ? (
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!hasAnsweredAll || status === 'submitting'}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: !hasAnsweredAll || status === 'submitting' ? '#9ca3af' : '#2563eb',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: !hasAnsweredAll || status === 'submitting' ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {status === 'submitting' ? 'Submitting...' : 'Submit Exam'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleNext}
+                    disabled={!hasAnsweredCurrent}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: !hasAnsweredCurrent ? '#9ca3af' : '#2563eb',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: !hasAnsweredCurrent ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    Next
+                  </button>
+                )}
+              </div>
             </div>
           </>
         )}

@@ -8,6 +8,7 @@ export type ResourceGroup = {
     locale: string;
     durationMin: number | null;
     quality: number;
+    completed?: boolean;
   }[];
 };
 
@@ -25,6 +26,7 @@ export function groupResources(
     locale: string;
     durationMin: number | null;
     quality: number;
+    completed?: boolean;
   }[]
 ): ResourceGroup[] {
   if (resources.length === 0) return [];

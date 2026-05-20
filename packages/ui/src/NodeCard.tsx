@@ -81,17 +81,6 @@ function NodeCard({ data }: TopicNodeProps) {
       <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>{title}</div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span
-          style={{
-            background: BADGE_BG[state],
-            color: BADGE_COLOR[state],
-            fontSize: 11,
-            borderRadius: 4,
-            padding: '2px 6px',
-          }}
-        >
-          {BADGE_LABEL[state]}
-        </span>
         <span style={{ fontSize: 11, color: '#6b7280' }}>{estimatedHours}h</span>
       </div>
 

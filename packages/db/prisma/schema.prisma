@@ -18,6 +18,7 @@ model User {
   pillReviews  PillReview[]
   validations  Validation[]
   customNodes  CustomNode[]
+  resourceProgress UserResourceProgress[]
 }
 
 model Topic {
@@ -58,6 +59,19 @@ model Resource {
   locale      String  @default("en")
   durationMin Int?
   quality     Int     @default(5)
+  progress    UserResourceProgress[]
+}
+
+model UserResourceProgress {
+  id         String   @id @default(uuid())
+  userId     String
+  resourceId String
+  user       User     @relation(fields: [userId], references: [id])
+  resource   Resource @relation(fields: [resourceId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, resourceId])
+  @@index([userId])
 }
 
 model Pill {

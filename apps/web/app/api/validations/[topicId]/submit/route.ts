@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, QUIZ_BANK } from '@elite/db';
-import { computeUnlocks } from '../../../../../lib/roadmap-cascade';
 import { getSessionUserId } from '@/lib/session';
-
-type NodeState = 'locked' | 'available' | 'in_progress' | 'mastered';
 
 export async function POST(
   req: NextRequest,
@@ -11,7 +8,6 @@ export async function POST(
 ) {
   const { topicId } = context.params;
 
-  // Parse and validate body
   let body: unknown;
   try {
     body = await req.json();
@@ -19,55 +15,47 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const answerIndex = (body as Record<string, unknown>)?.answerIndex;
-  if (answerIndex === undefined || answerIndex === null || typeof answerIndex !== 'number') {
-    return NextResponse.json({ error: 'answerIndex is required and must be a number' }, { status: 400 });
+  const answers = (body as Record<string, unknown>)?.answers as number[];
+  if (!Array.isArray(answers)) {
+    return NextResponse.json({ error: 'answers must be an array of numbers' }, { status: 400 });
   }
 
-  // Lookup quiz entry
-  const entry = QUIZ_BANK[topicId];
-  if (!entry) {
+  const entries = QUIZ_BANK[topicId];
+  if (!entries || entries.length === 0) {
     return NextResponse.json({ error: 'Quiz not found for topic' }, { status: 404 });
   }
 
-  // Get current user from session
+  if (answers.length !== entries.length) {
+    return NextResponse.json({ error: 'Answers length must match questions length' }, { status: 400 });
+  }
+
   const userId = await getSessionUserId();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Find node progress
+  // Already mastered short-circuit
   const nodeProgress = await prisma.nodeProgress.findUnique({
     where: { userId_topicId: { userId, topicId } },
   });
 
-  if (!nodeProgress) {
-    return NextResponse.json({ error: 'Topic progress not found' }, { status: 404 });
-  }
-
-  // Already mastered short-circuit
-  if (nodeProgress.state === 'mastered') {
+  if (nodeProgress?.state === 'mastered') {
     return NextResponse.json({ passed: true, alreadyMastered: true });
   }
 
-  const passed = answerIndex === entry.correctIndex;
-  const score = passed ? 100 : 0;
-  const answer = entry.options[answerIndex] ?? String(answerIndex);
+  let correctCount = 0;
+  for (let i = 0; i < entries.length; i++) {
+    if (answers[i] === entries[i].correctIndex) {
+      correctCount++;
+    }
+  }
+
+  const score = (correctCount / entries.length) * 100;
+  const passed = score >= 70; // 70% threshold
+  // Generate a summary for the answer column
+  const answerSummary = `${correctCount}/${entries.length} correct`;
 
   if (passed) {
-    // Fetch all topics and current progress outside the transaction for computeUnlocks
-    const allTopics = await prisma.topic.findMany();
-    const allProgress = await prisma.nodeProgress.findMany({ where: { userId } });
-
-    const progressMap = new Map<string, NodeState>(
-      allProgress.map((p) => [p.topicId, p.state as NodeState])
-    );
-    // Reflect the mastered state before computing unlocks
-    progressMap.set(topicId, 'mastered');
-
-    const toUnlock = computeUnlocks(allTopics, progressMap, topicId);
-
-    // Perform all writes in a transaction
     await prisma.$transaction(async (tx) => {
       // Create Validation row
       await tx.validation.create({
@@ -75,47 +63,36 @@ export async function POST(
           userId,
           topicId,
           type: 'multiple_choice',
-          question: entry.question,
-          answer,
+          question: '10-question final exam',
+          answer: answerSummary,
           score,
           passed: true,
         },
       });
 
       // Update NodeProgress to mastered
-      await tx.nodeProgress.update({
+      await tx.nodeProgress.upsert({
         where: { userId_topicId: { userId, topicId } },
-        data: { state: 'mastered', masteredAt: new Date() },
+        update: { state: 'mastered', masteredAt: new Date() },
+        create: { userId, topicId, state: 'mastered', masteredAt: new Date() },
       });
-
-      // Unlock dependents
-      for (const unlockId of toUnlock) {
-        const existing = progressMap.get(unlockId);
-        if (existing === 'locked' || existing === undefined) {
-          await tx.nodeProgress.upsert({
-            where: { userId_topicId: { userId, topicId: unlockId } },
-            update: { state: 'available' },
-            create: { userId, topicId: unlockId, state: 'available' },
-          });
-        }
-      }
     });
 
-    return NextResponse.json({ passed: true, score: 100, unlocked: toUnlock }, { status: 201 });
+    return NextResponse.json({ passed: true, score }, { status: 201 });
   } else {
-    // Failed attempt — create Validation row only
+    // Failed attempt
     await prisma.validation.create({
       data: {
         userId,
         topicId,
         type: 'multiple_choice',
-        question: entry.question,
-        answer,
+        question: '10-question final exam',
+        answer: answerSummary,
         score,
         passed: false,
       },
     });
 
-    return NextResponse.json({ passed: false, score: 0 });
+    return NextResponse.json({ passed: false, score });
   }
 }

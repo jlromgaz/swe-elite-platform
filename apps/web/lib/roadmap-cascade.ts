@@ -23,30 +23,9 @@ export function computeUnlocks(
   progressMap: Map<string, NodeState>,
   _justMasteredId: string
 ): string[] {
-  const result: string[] = [];
-
-  for (const topic of topics) {
-    const deps = JSON.parse(topic.dependsOn) as string[];
-
-    if (deps.length === 0) {
-      continue;
-    }
-
-    const currentState = progressMap.get(topic.id) ?? 'locked';
-    if (currentState !== 'locked') {
-      continue;
-    }
-
-    const allDepsMastered = deps.every(
-      (depId) => progressMap.get(depId) === 'mastered'
-    );
-
-    if (allDepsMastered) {
-      result.push(topic.id);
-    }
-  }
-
-  return result;
+  // Free navigation enabled: nodes don't unlock each other anymore.
+  // All nodes are available by default if not mastered/in_progress.
+  return [];
 }
 
 /**
@@ -66,47 +45,8 @@ export function computeRelock(
   progressMap: Map<string, NodeState>,
   resetTopicId: string
 ): string[] {
-  const dependents = new Map<string, string[]>();
-  for (const topic of topics) {
-    const deps = JSON.parse(topic.dependsOn) as string[];
-    for (const dep of deps) {
-      const list = dependents.get(dep) ?? [];
-      list.push(topic.id);
-      dependents.set(dep, list);
-    }
-  }
-
-  const relocked = new Set<string>();
-  const queue = [resetTopicId];
-
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    const children = dependents.get(current) ?? [];
-
-    for (const childId of children) {
-      if (relocked.has(childId)) continue;
-
-      const child = topics.find((t) => t.id === childId);
-      if (!child) continue;
-
-      const childDeps = JSON.parse(child.dependsOn) as string[];
-
-      const hasOtherMasteredDep = childDeps.some(
-        (depId) =>
-          depId !== resetTopicId &&
-          !relocked.has(depId) &&
-          progressMap.get(depId) === 'mastered'
-      );
-
-      if (!hasOtherMasteredDep) {
-        relocked.add(childId);
-        queue.push(childId);
-      }
-    }
-  }
-
-  relocked.delete(resetTopicId);
-  return Array.from(relocked);
+  // Free navigation enabled: nodes never relock.
+  return [];
 }
 
 export type { TopicDep, NodeState };

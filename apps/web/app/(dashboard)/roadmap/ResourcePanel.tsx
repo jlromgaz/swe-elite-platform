@@ -21,6 +21,7 @@ type ResourceData = {
   locale: string;
   durationMin: number | null;
   quality: number;
+  completed?: boolean;
 };
 
 export default function ResourcePanel({
@@ -56,6 +57,30 @@ export default function ResourcePanel({
         setLoading(false);
       });
   }, [topicId]);
+
+  async function toggleResource(resourceId: string, currentCompleted: boolean) {
+    const nextCompleted = !currentCompleted;
+
+    // Optimistic update
+    setGroups(prev => prev.map(group => ({
+      ...group,
+      resources: group.resources.map(r => r.id === resourceId ? { ...r, completed: nextCompleted } : r)
+    })));
+
+    try {
+      await fetch(`/api/resources/${topicId}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resourceId, completed: nextCompleted }),
+      });
+    } catch (e) {
+      // Revert if failed
+      setGroups(prev => prev.map(group => ({
+        ...group,
+        resources: group.resources.map(r => r.id === resourceId ? { ...r, completed: currentCompleted } : r)
+      })));
+    }
+  }
 
   function handleStart() {
     onStart(topicId);
@@ -139,36 +164,20 @@ export default function ResourcePanel({
               No resources yet — you can still progress through this topic!
             </p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-              {nodeState === 'available' && (
-                <button
-                  onClick={handleStart}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Start Topic
-                </button>
-              )}
-              {nodeState === 'in_progress' && (
-                <button
-                  onClick={handleQuiz}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Validate Mastery
-                </button>
-              )}
+
+              <button
+                onClick={handleQuiz}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                Validate Mastery
+              </button>
               <button
                 onClick={handleClose}
                 style={{
@@ -193,66 +202,65 @@ export default function ResourcePanel({
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {group.resources.map((r) => (
-                    <a
+                    <div
                       key={r.id}
-                      href={r.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       style={{
-                        display: 'block',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
                         padding: '8px 12px',
                         borderRadius: '4px',
                         border: '1px solid #e5e7eb',
-                        textDecoration: 'none',
-                        color: '#1f2937',
+                        backgroundColor: r.completed ? '#f0fdf4' : 'transparent',
                       }}
                     >
-                      <span style={{ fontWeight: 500 }}>{r.title}</span>
-                      {r.durationMin && (
-                        <span style={{ color: '#6b7280', marginLeft: '8px' }}>
-                          {r.durationMin} min
+                      <input
+                        type="checkbox"
+                        checked={!!r.completed}
+                        onChange={() => toggleResource(r.id, !!r.completed)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                      <a
+                        href={r.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          flex: 1,
+                          textDecoration: 'none',
+                          color: r.completed ? '#166534' : '#1f2937',
+                        }}
+                      >
+                        <span style={{ fontWeight: 500 }}>{r.title}</span>
+                        {r.durationMin && (
+                          <span style={{ color: '#6b7280', marginLeft: '8px' }}>
+                            {r.durationMin} min
+                          </span>
+                        )}
+                        <span style={{ color: '#9ca3af', marginLeft: '8px' }}>
+                          ★ {r.quality}/10
                         </span>
-                      )}
-                      <span style={{ color: '#9ca3af', marginLeft: '8px' }}>
-                        ★ {r.quality}/10
-                      </span>
-                    </a>
+                      </a>
+                    </div>
                   ))}
                 </div>
               </div>
             ))}
 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
-              {nodeState === 'available' && (
-                <button
-                  onClick={handleStart}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Start Topic
-                </button>
-              )}
-              {nodeState === 'in_progress' && (
-                <button
-                  onClick={handleQuiz}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Validate Mastery
-                </button>
-              )}
+
+              <button
+                onClick={handleQuiz}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                Validate Mastery
+              </button>
               <button
                 onClick={handleClose}
                 style={{
