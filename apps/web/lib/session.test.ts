@@ -15,7 +15,7 @@ vi.mock('next/headers', () => ({
 }));
 
 // Import after mocks are set up
-const { setSessionCookie, getSessionUserId } = await import('./session');
+const { setSessionCookie, getSessionUserId, clearSessionCookie } = await import('./session');
 
 describe('session helpers', () => {
   beforeEach(() => {
@@ -34,6 +34,25 @@ describe('session helpers', () => {
       expect(options.sameSite).toBe('lax');
       expect(options.path).toBe('/');
       expect(typeof options.maxAge).toBe('number');
+    });
+  });
+
+  describe('clearSessionCookie', () => {
+    it('calls cookies().set with sid, empty string, and maxAge: 0', () => {
+      clearSessionCookie();
+      expect(mockSet).toHaveBeenCalledOnce();
+      const [name, value, options] = mockSet.mock.calls[0];
+      expect(name).toBe('sid');
+      expect(value).toBe('');
+      expect(options.maxAge).toBe(0);
+    });
+
+    it('uses same httpOnly, sameSite, and path attributes as setSessionCookie', () => {
+      clearSessionCookie();
+      const [, , options] = mockSet.mock.calls[0];
+      expect(options.httpOnly).toBe(true);
+      expect(options.sameSite).toBe('lax');
+      expect(options.path).toBe('/');
     });
   });
 
