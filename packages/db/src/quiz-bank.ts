@@ -5,6 +5,42 @@ export type QuizEntry = {
 };
 
 export const QUIZ_BANK: Record<string, QuizEntry[]> = {
+  'data-structures-fundamentals': [
+    { question: 'Which data structure uses LIFO (Last In First Out)?', options: ['Queue', 'Stack', 'Array', 'Linked List'], correctIndex: 1 },
+    { question: 'What is the time complexity of accessing an element in an array by index?', options: ['O(1)', 'O(n)', 'O(log n)', 'O(n^2)'], correctIndex: 0 },
+    { question: 'Which data structure uses FIFO (First In First Out)?', options: ['Stack', 'Tree', 'Queue', 'Graph'], correctIndex: 2 },
+    { question: 'In a Hash Table, what is a collision?', options: ['Two tables merging', 'Two keys hashing to the same index', 'Two values having different keys', 'An array out of bounds error'], correctIndex: 1 },
+    { question: 'Which of these is a non-linear data structure?', options: ['Array', 'Stack', 'Queue', 'Tree'], correctIndex: 3 },
+    { question: 'What is the worst-case time complexity of searching in a Binary Search Tree (BST)?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n^2)'], correctIndex: 2 },
+    { question: 'What data structure is typically used to implement a Priority Queue?', options: ['Stack', 'Heap', 'Linked List', 'Hash Table'], correctIndex: 1 },
+    { question: 'Which traversal method explores all neighbors at the current depth before moving deeper?', options: ['Depth-First Search', 'Breadth-First Search', 'In-order Traversal', 'Post-order Traversal'], correctIndex: 1 },
+    { question: 'What is the main advantage of a Linked List over an Array?', options: ['O(1) random access', 'Dynamic size and O(1) insertions/deletions', 'Less memory usage', 'Better cache locality'], correctIndex: 1 },
+    { question: 'A graph without any cycles is called a:', options: ['Cyclic Graph', 'Complete Graph', 'Tree (or Forest)', 'Bipartite Graph'], correctIndex: 2 },
+  ],
+  'algorithms-complexity': [
+    { question: 'What does Big-O notation describe?', options: ['The average-case complexity', 'The best-case complexity', 'The worst-case complexity', 'The exact runtime in seconds'], correctIndex: 2 },
+    { question: 'Which sorting algorithm has an average time complexity of O(n log n) and is based on divide and conquer?', options: ['Bubble Sort', 'Insertion Sort', 'Merge Sort', 'Selection Sort'], correctIndex: 2 },
+    { question: 'What is the time complexity of Binary Search?', options: ['O(n)', 'O(log n)', 'O(1)', 'O(n log n)'], correctIndex: 1 },
+    { question: 'Which technique solves problems by storing the results of overlapping subproblems?', options: ['Greedy Algorithm', 'Dynamic Programming', 'Divide and Conquer', 'Backtracking'], correctIndex: 1 },
+    { question: 'What is the time complexity of Bubble Sort in the worst case?', options: ['O(n)', 'O(n log n)', 'O(n^2)', 'O(2^n)'], correctIndex: 2 },
+    { question: 'Which graph algorithm finds the shortest path from a single source to all other vertices with non-negative edge weights?', options: ['Kruskal\'s', 'Prim\'s', 'Dijkstra\'s', 'Bellman-Ford'], correctIndex: 2 },
+    { question: 'What is a characteristic of Greedy algorithms?', options: ['They always find the globally optimal solution', 'They make locally optimal choices at each step', 'They explore all possible paths', 'They use memoization'], correctIndex: 1 },
+    { question: 'O(1) time complexity means:', options: ['The algorithm takes 1 second', 'The runtime grows linearly', 'The runtime is constant regardless of input size', 'The algorithm has no loops'], correctIndex: 2 },
+    { question: 'In the Master Theorem, if the work done in splitting and combining is smaller than the recursive calls, the complexity is dominated by:', options: ['The base cases', 'The leaves (recursive calls)', 'The root', 'It cannot be determined'], correctIndex: 1 },
+    { question: 'Which search algorithm requires the array to be sorted beforehand?', options: ['Linear Search', 'Binary Search', 'Depth-First Search', 'Breadth-First Search'], correctIndex: 1 },
+  ],
+  'systems-design-basics': [
+    { question: 'What is Horizontal Scaling (Scaling Out)?', options: ['Upgrading CPU and RAM on a single server', 'Adding more servers to handle the load', 'Caching data in memory', 'Optimizing database queries'], correctIndex: 1 },
+    { question: 'What is the primary role of a Load Balancer?', options: ['To encrypt traffic', 'To store session data', 'To distribute incoming traffic across multiple servers', 'To execute database transactions'], correctIndex: 2 },
+    { question: 'Which of the following is a key-value store commonly used for caching?', options: ['PostgreSQL', 'Redis', 'MongoDB', 'Elasticsearch'], correctIndex: 1 },
+    { question: 'What is a Single Point of Failure (SPOF)?', options: ['A slow database query', 'A part of a system that, if it fails, stops the entire system', 'A microservice', 'A load balancer'], correctIndex: 1 },
+    { question: 'What does a CDN (Content Delivery Network) primarily do?', options: ['Executes server-side code', 'Hosts databases', 'Caches static content closer to users to reduce latency', 'Provides DNS services'], correctIndex: 2 },
+    { question: 'What is the CAP theorem?', options: ['Consistency, Availability, Partition Tolerance', 'Concurrency, Asynchrony, Performance', 'Caching, API, Processing', 'Compute, Access, Persistence'], correctIndex: 0 },
+    { question: 'In a relational database, what is ACID?', options: ['Asynchronous, Concurrent, Isolated, Distributed', 'Atomicity, Consistency, Isolation, Durability', 'Active, Cached, Indexed, Dynamic', 'Array, Collection, Iterable, Dictionary'], correctIndex: 1 },
+    { question: 'What is database sharding?', options: ['Adding more RAM to a database server', 'Replicating the entire database', 'Partitioning data across multiple databases/servers', 'Creating indexes for faster searches'], correctIndex: 2 },
+    { question: 'What is the difference between SQL and NoSQL databases?', options: ['SQL is faster than NoSQL', 'SQL is structured/relational; NoSQL handles unstructured/flexible data', 'NoSQL requires schemas, SQL does not', 'SQL cannot scale horizontally'], correctIndex: 1 },
+    { question: 'Which protocol is commonly used for stateless, RESTful APIs?', options: ['FTP', 'SMTP', 'HTTP', 'SSH'], correctIndex: 2 },
+  ],
   'advanced-architecture-ddd': [
     {
       question: 'In DDD, what defines the boundary within which a particular domain model applies?',

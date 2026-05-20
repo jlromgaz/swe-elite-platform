@@ -8,6 +8,38 @@ const prisma = new PrismaClient({
 // TOPICS — Foundation + Elite Domains
 // ──────────────────────────────────────────────────────
 const topics = [
+  // ── Foundation 1: Data Structures ──
+  {
+    id: 'data-structures-fundamentals',
+    slug: 'data-structures-fundamentals',
+    title: 'Data Structures Fundamentals',
+    category: 'foundation',
+    estimatedHours: 20,
+    dependsOn: '[]',
+    isRequired: true,
+  },
+  
+  // ── Foundation 2: Algorithms & Complexity ──
+  {
+    id: 'algorithms-complexity',
+    slug: 'algorithms-complexity',
+    title: 'Algorithms & Complexity',
+    category: 'foundation',
+    estimatedHours: 25,
+    dependsOn: '["data-structures-fundamentals"]',
+    isRequired: true,
+  },
+  
+  // ── Foundation 3: Systems Design Basics ──
+  {
+    id: 'systems-design-basics',
+    slug: 'systems-design-basics',
+    title: 'Systems Design Basics',
+    category: 'foundation',
+    estimatedHours: 30,
+    dependsOn: '["algorithms-complexity"]',
+    isRequired: true,
+  },
 
   // ── Domain 1: Advanced Software Architecture & DDD ──
   {
@@ -16,7 +48,7 @@ const topics = [
     title: 'Advanced Software Architecture & DDD',
     category: 'architecture',
     estimatedHours: 50,
-    dependsOn: '[]',
+    dependsOn: '["systems-design-basics"]',
     isRequired: true,
   },
 
@@ -27,7 +59,7 @@ const topics = [
     title: 'Distributed Systems, Sharding & Load Balancing at Scale',
     category: 'systems',
     estimatedHours: 45,
-    dependsOn: '[]',
+    dependsOn: '["systems-design-basics"]',
     isRequired: true,
   },
 
@@ -38,7 +70,7 @@ const topics = [
     title: 'Clean Code, SOLID Principles & Refactoring',
     category: 'craftsmanship',
     estimatedHours: 35,
-    dependsOn: '[]',
+    dependsOn: '["systems-design-basics"]',
     isRequired: true,
   },
 
@@ -81,8 +113,28 @@ const topics = [
 // ──────────────────────────────────────────────────────
 const resources = [
   // ══════════════════════════════════════════════════════
-  // Domain 0 — Fundamentals (no additional resources)
+  // Domain 0 — Fundamentals (Data Structures, Algorithms, Systems Design)
   // ══════════════════════════════════════════════════════
+
+  // ── Data Structures Fundamentals ──
+  { topicId: 'data-structures-fundamentals', type: 'video', title: 'Data Structures Easy to Advanced Course (freeCodeCamp)', url: 'https://www.youtube.com/watch?v=RBSGKlAvoiM', locale: 'en', durationMin: 480, quality: 5 },
+  { topicId: 'data-structures-fundamentals', type: 'video', title: 'Data Structures and Algorithms for Beginners (mycodeschool)', url: 'https://www.youtube.com/playlist?list=PL2_aWCzGMAwI3W_JlcBbtYTwiQSsOTa6P', locale: 'en', durationMin: 300, quality: 5 },
+  { topicId: 'data-structures-fundamentals', type: 'video', title: 'Introduction to Algorithms - MIT 6.006', url: 'https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/video_galleries/lecture-videos/', locale: 'en', durationMin: 600, quality: 5 },
+  { topicId: 'data-structures-fundamentals', type: 'article', title: 'Data Structures (GeeksforGeeks)', url: 'https://www.geeksforgeeks.org/data-structures/', locale: 'en', durationMin: 120, quality: 4 },
+  { topicId: 'data-structures-fundamentals', type: 'article', title: 'Data Structure and Types (Programiz)', url: 'https://www.programiz.com/dsa/data-structure-types', locale: 'en', durationMin: 30, quality: 4 },
+
+  // ── Algorithms & Complexity ──
+  { topicId: 'algorithms-complexity', type: 'video', title: 'Algorithms Course - Graph Theory Tutorial (freeCodeCamp)', url: 'https://www.youtube.com/watch?v=09_LlHjoEiY', locale: 'en', durationMin: 240, quality: 5 },
+  { topicId: 'algorithms-complexity', type: 'video', title: 'Time and Space Complexity (Abdul Bari)', url: 'https://www.youtube.com/watch?v=0IAPZzGSbME', locale: 'en', durationMin: 60, quality: 5 },
+  { topicId: 'algorithms-complexity', type: 'article', title: 'Understanding Big-O Notation (FreeCodeCamp)', url: 'https://www.freecodecamp.org/news/big-o-notation-why-it-matters-and-why-it-doesnt-1674cfa8a23c/', locale: 'en', durationMin: 45, quality: 5 },
+  { topicId: 'algorithms-complexity', type: 'article', title: 'Top Algorithms for Interviews (GeeksforGeeks)', url: 'https://www.geeksforgeeks.org/top-algorithms-and-data-structures-for-competitive-programming/', locale: 'en', durationMin: 60, quality: 4 },
+
+  // ── Systems Design Basics ──
+  { topicId: 'systems-design-basics', type: 'video', title: 'System Design for Beginners (freeCodeCamp)', url: 'https://www.youtube.com/watch?v=m8Icp_Cid5o', locale: 'en', durationMin: 60, quality: 5 },
+  { topicId: 'systems-design-basics', type: 'video', title: 'System Design Interview – Step By Step Guide', url: 'https://www.youtube.com/watch?v=bUHFg8CZFws', locale: 'en', durationMin: 40, quality: 5 },
+  { topicId: 'systems-design-basics', type: 'article', title: 'System Design Primer (GitHub)', url: 'https://github.com/donnemartin/system-design-primer', locale: 'en', durationMin: 300, quality: 5 },
+  { topicId: 'systems-design-basics', type: 'article', title: 'Grokking the System Design Interview (DesignGurus)', url: 'https://www.designgurus.io/course/grokking-the-system-design-interview', locale: 'en', durationMin: 240, quality: 5 },
+
 
   // ══════════════════════════════════════════════════════
   // Domain 1 — Advanced Architecture & DDD
@@ -377,6 +429,66 @@ const resources = [
 // PILLS — Micro-learning per topic
 // ──────────────────────────────────────────────────────
 const pills = [
+  // ── Foundation 1: Data Structures ──
+  {
+    id: 'pill-ds-1',
+    topicId: 'data-structures-fundamentals',
+    content: '**Arrays vs Linked Lists**: Arrays offer O(1) random access but O(n) insertions/deletions. Linked Lists offer O(1) insertions/deletions at known positions but O(n) access.',
+    locale: 'en',
+  },
+  {
+    id: 'pill-ds-2',
+    topicId: 'data-structures-fundamentals',
+    content: '**Hash Tables**: Provide average O(1) time complexity for search, insert, and delete operations by mapping keys to values using a hash function. Beware of collisions!',
+    locale: 'en',
+  },
+  {
+    id: 'pill-ds-3',
+    topicId: 'data-structures-fundamentals',
+    content: '**Trees & Graphs**: Trees are acyclic graphs. Binary Search Trees (BST) allow O(log n) operations if balanced. Graphs model complex relationships (e.g., social networks).',
+    locale: 'en',
+  },
+
+  // ── Foundation 2: Algorithms & Complexity ──
+  {
+    id: 'pill-algo-1',
+    topicId: 'algorithms-complexity',
+    content: '**Big-O Notation**: Describes the worst-case time/space complexity. O(1) is constant, O(log n) is logarithmic, O(n) is linear, and O(n^2) is quadratic.',
+    locale: 'en',
+  },
+  {
+    id: 'pill-algo-2',
+    topicId: 'algorithms-complexity',
+    content: '**Sorting Algorithms**: QuickSort (O(n log n) average, O(n^2) worst) and MergeSort (O(n log n) always) are divide-and-conquer. BubbleSort is O(n^2) and generally avoided.',
+    locale: 'en',
+  },
+  {
+    id: 'pill-algo-3',
+    topicId: 'algorithms-complexity',
+    content: '**Dynamic Programming (DP)**: Optimizes recursive algorithms by storing overlapping subproblems (Memoization or Tabulation). Reduces exponential time to polynomial.',
+    locale: 'en',
+  },
+
+  // ── Foundation 3: Systems Design Basics ──
+  {
+    id: 'pill-sysdes-1',
+    topicId: 'systems-design-basics',
+    content: '**Horizontal vs Vertical Scaling**: Vertical (scaling up) means adding more power (CPU/RAM) to one machine. Horizontal (scaling out) means adding more machines to the pool.',
+    locale: 'en',
+  },
+  {
+    id: 'pill-sysdes-2',
+    topicId: 'systems-design-basics',
+    content: '**Load Balancers**: Distribute incoming network traffic across multiple backend servers to ensure high availability and reliability.',
+    locale: 'en',
+  },
+  {
+    id: 'pill-sysdes-3',
+    topicId: 'systems-design-basics',
+    content: '**Caching**: Storing frequently accessed data in fast memory (e.g., Redis, Memcached) to reduce database load and improve response times.',
+    locale: 'en',
+  },
+
   // ── Domain 1: Advanced Architecture & DDD ──
   {
     id: 'pill-arch-1',
