@@ -49,10 +49,15 @@ export default async function RoadmapPage() {
   });
 
   const customFlowNodes: Node[] = customNodes.map((cn) => {
+    const deps = JSON.parse(cn.dependsOn) as string[];
+    const depTitles = deps
+      .map((depId) => topics.find((t) => t.id === depId))
+      .filter(Boolean)
+      .map((t) => t!.title);
     return {
       id: `custom-${cn.id}`,
       type: 'customNode',
-      data: { title: cn.title, customNodeId: cn.id },
+      data: { title: cn.title, customNodeId: cn.id, dependsOnTitles: depTitles },
       position: { x: 0, y: 0 },
     };
   });

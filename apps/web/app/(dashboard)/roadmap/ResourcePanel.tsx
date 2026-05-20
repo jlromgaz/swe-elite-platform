@@ -136,37 +136,53 @@ export default function ResourcePanel({
         ) : groups.length === 0 ? (
           <div style={{ textAlign: 'center' }}>
             <p style={{ color: '#6b7280', marginBottom: '16px' }}>
-              No resources yet
+              No resources yet — you can still progress through this topic!
             </p>
-            {nodeState === 'available' && (
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+              {nodeState === 'available' && (
+                <button
+                  onClick={handleStart}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Start Topic
+                </button>
+              )}
+              {nodeState === 'in_progress' && (
+                <button
+                  onClick={handleQuiz}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Validate Mastery
+                </button>
+              )}
               <button
-                onClick={handleStart}
+                onClick={handleClose}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: '#2563eb',
-                  color: 'white',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
                 }}
               >
-                Start Topic
+                Close
               </button>
-            )}
-            <button
-              onClick={handleClose}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#f3f4f6',
-                color: '#374151',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginLeft: nodeState === 'available' ? '8px' : '0',
-              }}
-            >
-              Close
-            </button>
+            </div>
           </div>
         ) : (
           <>
