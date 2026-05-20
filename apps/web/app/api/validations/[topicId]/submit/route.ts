@@ -31,7 +31,7 @@ export async function POST(
   }
 
   // Get current user from session
-  const userId = getSessionUserId();
+  const userId = await getSessionUserId();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

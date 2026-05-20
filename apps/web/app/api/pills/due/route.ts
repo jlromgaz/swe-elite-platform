@@ -5,7 +5,7 @@ import { getSessionUserId } from '@/lib/session';
 export const dynamic = 'force-dynamic';
 
 export async function GET(_req: NextRequest) {
-  const userId = getSessionUserId();
+  const userId = await getSessionUserId();
 
   if (!userId) {
     return NextResponse.json([]);

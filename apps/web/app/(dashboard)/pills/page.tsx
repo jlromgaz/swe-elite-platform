@@ -8,7 +8,7 @@ import { getSessionUserId } from '@/lib/session';
 const PillQueueClient = dynamicImport(() => import('./PillQueue'), { ssr: false });
 
 export default async function PillsPage() {
-  const userId = getSessionUserId();
+  const userId = await getSessionUserId();
 
   if (!userId) {
     redirect('/onboarding');

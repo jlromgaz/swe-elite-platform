@@ -10,7 +10,7 @@ export async function POST(
   context: { params: { topicId: string } }
 ) {
   const { topicId } = context.params;
-  const userId = getSessionUserId();
+  const userId = await getSessionUserId();
 
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

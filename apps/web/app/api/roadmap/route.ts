@@ -20,7 +20,7 @@ type RoadmapEdge = {
 };
 
 export async function GET() {
-  const userId = getSessionUserId();
+  const userId = await getSessionUserId();
 
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

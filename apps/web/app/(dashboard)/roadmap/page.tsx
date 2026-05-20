@@ -11,7 +11,7 @@ const ReactFlowCanvas = dynamicImport(() => import('./ReactFlowCanvas'), { ssr: 
 type NodeState = 'locked' | 'available' | 'in_progress' | 'mastered';
 
 export default async function RoadmapPage() {
-  const userId = getSessionUserId();
+  const userId = await getSessionUserId();
 
   if (!userId) {
     redirect('/onboarding');
