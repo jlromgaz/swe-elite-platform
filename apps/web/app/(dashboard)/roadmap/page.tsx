@@ -21,6 +21,9 @@ export default async function RoadmapPage() {
   const nodeProgress = await prisma.nodeProgress.findMany({
     where: { userId },
   });
+  const customNodes = await prisma.customNode.findMany({
+    where: { userId },
+  });
 
   const progressMap = new Map(
     nodeProgress.map((p) => [p.topicId, p.state as NodeState]),
@@ -45,6 +48,15 @@ export default async function RoadmapPage() {
     };
   });
 
+  const customFlowNodes: Node[] = customNodes.map((cn) => {
+    return {
+      id: `custom-${cn.id}`,
+      type: 'customNode',
+      data: { title: cn.title, customNodeId: cn.id },
+      position: { x: 0, y: 0 },
+    };
+  });
+
   const edges: Edge[] = [];
   for (const topic of topics) {
     const deps = JSON.parse(topic.dependsOn) as string[];
@@ -57,9 +69,27 @@ export default async function RoadmapPage() {
     }
   }
 
+  for (const cn of customNodes) {
+    const deps = JSON.parse(cn.dependsOn) as string[];
+    for (const dep of deps) {
+      edges.push({
+        id: `${dep}->custom-${cn.id}`,
+        source: dep,
+        target: `custom-${cn.id}`,
+        style: { strokeDasharray: '4 2' },
+      });
+    }
+  }
+
+  const topicList = topics.map((t) => ({ id: t.id, title: t.title }));
+
   return (
     <div style={{ height: 'calc(100vh - 56px)', width: '100%' }}>
-      <ReactFlowCanvas initialNodes={nodes} initialEdges={edges} />
+      <ReactFlowCanvas
+        initialNodes={[...nodes, ...customFlowNodes]}
+        initialEdges={[...edges]}
+        topics={topicList}
+      />
     </div>
   );
 }

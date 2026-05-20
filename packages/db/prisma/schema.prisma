@@ -17,6 +17,7 @@ model User {
   progress     NodeProgress[]
   pillReviews  PillReview[]
   validations  Validation[]
+  customNodes  CustomNode[]
 }
 
 model Topic {
@@ -93,4 +94,15 @@ model Validation {
   score       Int?
   passed      Boolean  @default(false)
   attemptedAt DateTime @default(now())
+}
+
+model CustomNode {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  dependsOn String   @default("[]")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
