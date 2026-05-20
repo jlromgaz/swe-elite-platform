@@ -13,6 +13,7 @@ export default defineConfig({
     env: {
       DATABASE_URL: 'file:./test.db',
     },
+    setupFiles: ['./vitest.setup.ts'],
     pool: 'forks',
     poolOptions: {
       forks: {

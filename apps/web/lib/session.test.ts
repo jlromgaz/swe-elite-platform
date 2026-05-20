@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// Unmock @/lib/session so we test the real implementation (global setup mocks it).
+vi.unmock('@/lib/session');
+
 // Mock next/headers before importing session helpers
 const mockSet = vi.fn();
 const mockGet = vi.fn();
@@ -11,7 +14,7 @@ vi.mock('next/headers', () => ({
   })),
 }));
 
-// Import after mock is set up
+// Import after mocks are set up
 const { setSessionCookie, getSessionUserId } = await import('./session');
 
 describe('session helpers', () => {
@@ -35,16 +38,16 @@ describe('session helpers', () => {
   });
 
   describe('getSessionUserId', () => {
-    it('returns the value of the "sid" cookie when present', () => {
+    it('returns the value of the "sid" cookie when present', async () => {
       mockGet.mockReturnValue({ name: 'sid', value: 'user-xyz-456' });
-      const result = getSessionUserId();
+      const result = await getSessionUserId();
       expect(result).toBe('user-xyz-456');
       expect(mockGet).toHaveBeenCalledWith('sid');
     });
 
-    it('returns null when sid cookie is absent', () => {
+    it('returns null when sid cookie is absent', async () => {
       mockGet.mockReturnValue(undefined);
-      const result = getSessionUserId();
+      const result = await getSessionUserId();
       expect(result).toBeNull();
     });
   });

@@ -13,6 +13,6 @@ export function setSessionCookie(userId: string): void {
   });
 }
 
-export function getSessionUserId(): string | null {
+export async function getSessionUserId(): Promise<string | null> {
   return cookies().get(COOKIE_NAME)?.value ?? null;
 }

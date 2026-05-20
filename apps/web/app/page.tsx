@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
-import { prisma } from '@elite/db';
+import { getSessionUserId } from '@/lib/session';
 
 export default async function Home() {
-  const user = await prisma.user.findFirst();
-  redirect(user ? '/roadmap' : '/onboarding');
+  const userId = await getSessionUserId();
+  redirect(userId ? '/roadmap' : '/onboarding');
 }
