@@ -24,11 +24,23 @@
 ## 📸 Platform Sneak Peek
 
 <div align="center">
-  <img src="assets/screenshot-1.png" alt="Platform Screenshot 1" width="800" />
-  <br/><br/>
-  <img src="assets/screenshot-2.png" alt="Platform Screenshot 2" width="400" />
-  &nbsp;&nbsp;
-  <img src="assets/screenshot-3.png" alt="Platform Screenshot 3" width="400" />
+  <h3>🗺️ Adaptive Roadmap Topology</h3>
+  <img src="assets/screenshot-1.png" alt="Roadmap Topology" width="800" />
+  
+  <br/><br/><br/>
+  
+  <table align="center" style="border: none;">
+    <tr style="border: none;">
+      <td align="center" style="border: none;">
+        <h3>📚 Node Resources & Content</h3>
+        <img src="assets/screenshot-2.png" alt="Node Content" width="400" />
+      </td>
+      <td align="center" style="border: none;">
+        <h3>⚔️ Mastery Validation Quiz</h3>
+        <img src="assets/screenshot-3.png" alt="Validation Quiz" width="400" />
+      </td>
+    </tr>
+  </table>
 </div>
 
 ---
