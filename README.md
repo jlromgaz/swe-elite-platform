@@ -26,9 +26,9 @@
 <div align="center">
   <img src="assets/screenshot-1.png" alt="Platform Screenshot 1" width="800" />
   <br/><br/>
-  <img src="assets/screenshot-2.png" alt="Platform Screenshot 2" width="800" />
-  <br/><br/>
-  <img src="assets/screenshot-3.png" alt="Platform Screenshot 3" width="800" />
+  <img src="assets/screenshot-2.png" alt="Platform Screenshot 2" width="400" />
+  &nbsp;&nbsp;
+  <img src="assets/screenshot-3.png" alt="Platform Screenshot 3" width="400" />
 </div>
 
 ---
